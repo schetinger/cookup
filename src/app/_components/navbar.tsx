@@ -1,19 +1,22 @@
 "use client"
 import Image from 'next/image'
 import { useState } from 'react';
-export function Navbar (){
+export function Navbar ({ className }:{className:string}){
     const [searching, setSearching] = useState(false);
     return(
-        <header>
-      <nav className="flex items-center justify-between p-4">
-        <Image
+        <header className={className}>
+      <nav className="bg-white flex items-center justify-between py-0 m-2">
+        <a href='/' className='flex'>
+             <Image
             src="/logo.jpeg"
             alt="CookUp"
-            width={90}
-            height={90}
+            width={70}
+            height={70}
         />
-        <a className=" font-mono font-bold text-2xl left-30 fixed">CookUP</a>
+            <span className=" font-mono font-bold text-2xl mt-6">CookUP</span>
         
+        </a>
+       
         <ul className=" font-mono space-x-3 flex">
             {searching ? ( 
                 <form className='relative flex items-center'>
