@@ -5,7 +5,7 @@ export function Navbar ({ className }:{className:string}){
     const [searching, setSearching] = useState(false);
     return(
         <header className={className}>
-      <nav className="bg-white flex items-center justify-between py-0 m-2">
+      <nav className="bg-white flex items-center justify-between w-full h-full p-4 ">
         <a href='/' className='flex'>
              <Image
             src="/logo.jpeg"
@@ -20,7 +20,7 @@ export function Navbar ({ className }:{className:string}){
         <ul className=" font-mono space-x-3 flex">
             {searching ? ( 
                 <form className='relative flex items-center'>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="ml-2 absolute size-6">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="absolute ml-2  size-6">
                             <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                             </svg>
                         <input autoFocus type='text' placeholder='Ex:Risoto...' className=" shadow-gray-500 shadow-xl bg-red-500 rounded-4xl py-3.5 px-8 text-xs flex items-center justify-center gap-2 focus:outline-none"
@@ -37,7 +37,7 @@ export function Navbar ({ className }:{className:string}){
                 <button 
                 onClick={() => setSearching(true)}
                 className="bg-gray-100 rounded-4xl py-2.5 px-8 text-xs hover:bg-red-500 duration-300 flex items-center justify-center gap-2 hover:shadow-gray-500 shadow-xl">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className=" size-6">
                     <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
                 </svg>
                 <span>Pesquisar</span>

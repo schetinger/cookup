@@ -3,10 +3,11 @@ import pancake from '~/assets/images/pancake.jpg'
 import sandwich from '~/assets/images/sandwich.jpg'
 import cake from '~/assets/images/cake.jpg'
 import ribs from '~/assets/images/ribs.jpg'
+import ingredients from '~/assets/images/orange.jpg'
 export function Sec1 ({className}:{className:string}){
     return(
-        <section className={className}>
-            <p className="text-8xl p-4 text-center font-bold">Conheça as melhores receitas</p>
+        <section className={`${className} bg-cover bg-center bg-no-repeat items-center`} style={{ backgroundImage: `url(${ingredients.src})` }}>
+            <p className="text-4xl sm:text-6xl lg:text-7xl p-4 text-center font-mono">Descubra e compartilhe as melhores receitas</p>
             <div className="columns-2 gap-3">
                 <Image
                         src={pancake}
@@ -39,7 +40,7 @@ export function Sec1 ({className}:{className:string}){
 
 
                 </div> 
-                <p className="text-8xl text-center p-4 font-bold">E faça no conforto de sua casa</p>
+                <p className="text-4xl sm:text-6xl lg:text-7xl text-center p-4 font-mono ">Site pra achar as receitas mais criativas e compartilhar as suas prórpias</p>
             </section>
     )
     
