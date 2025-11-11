@@ -2,73 +2,88 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "sqlite"
-    // NOTE: When using mysql or sqlserver, uncomment the @db.Text annotations in model Account below
-    // Further reading:
-    // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
-    // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
-    url      = env("DATABASE_URL")
+  provider = "postgresql" // Alterado conforme seu exemplo
+  url      = env("DATABASE_URL")
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    createdBy   User   @relation(fields: [createdById], references: [id])
-    createdById String
-
-    @@index([name])
+// Enum para os cargos de usuário
+enum Role {
+  USER
+  ADMIN
 }
 
-// Necessary for Next auth
-model Account {
-    id                       String  @id @default(cuid())
-    userId                   String
-    type                     String
-    provider                 String
-    providerAccountId        String
-    refresh_token            String? // @db.Text
-    access_token             String? // @db.Text
-    expires_at               Int?
-    token_type               String?
-    scope                    String?
-    id_token                 String? // @db.Text
-    session_state            String?
-    user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-    refresh_token_expires_in Int?
-
-    @@unique([provider, providerAccountId])
-}
-
-model Session {
-    id           String   @id @default(cuid())
-    sessionToken String   @unique
-    userId       String
-    expires      DateTime
-    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
+// Modelo de Usuário baseado no seu DBML e exemplo
 model User {
-    id            String    @id @default(cuid())
-    name          String?
-    email         String?   @unique
-    emailVerified DateTime?
-    image         String?
-    accounts      Account[]
-    sessions      Session[]
-    posts         Post[]
+  id        Int      @id @default(autoincrement()) // ID como Int
+  username  String?  @unique // Do seu DBML
+  nickname  String?  // Do seu DBML
+  role      Role     @default(USER) // Do seu DBML
+  bio       String?  @db.Text // Do seu DBML
+  createdAt DateTime @default(now()) // Boa prática, do seu exemplo
+
+  // Relações
+  posts          PostReceita[] // Receitas que o usuário criou
+  reviews        Review[]      // Reviews que o usuário fez
+  savedRecipes   PostReceita[] @relation("SavedRecipes") // Receitas salvas (M2M)
+  following      Follow[]      @relation("following") // Quem este usuário segue
+  followedBy     Follow[]      @relation("followedBy") // Quem segue este usuário
 }
 
-model VerificationToken {
-    identifier String
-    token      String   @unique
-    expires    DateTime
+// Modelo de Receita (antigo postsReceita)
+model PostReceita {
+  id          Int      @id @default(autoincrement()) // ID como Int
+  title       String
+  ingredients String   @db.Text // @db.Text para 'text' no Postgres
+  body        String   @db.Text // @db.Text para 'text' no Postgres
+  status      String?
+  createdAt   DateTime @default(now())
 
-    @@unique([identifier, token])
+  // Relação com o criador (User)
+  user    User     @relation(fields: [userId], references: [id])
+  userId  Int      // Chave estrangeira como Int
+
+  // Relações
+  reviews   Review[] // Reviews desta receita
+  savedBy   User[]   @relation("SavedRecipes") // Usuários que salvaram (M2M)
+}
+
+// Modelo para Reviews
+model Review {
+  id         Int      @id @default(autoincrement()) // ID como Int
+  title      String
+  body       String   @db.Text // @db.Text para 'text' no Postgres
+  rate       Int      // A nota (rating)
+  status     String?
+  createdAt  DateTime @default(now())
+
+  // Relação com User
+  user    User     @relation(fields: [userId], references: [id])
+  userId  Int      // Chave estrangeira como Int
+
+  // Relação com PostReceita
+  receita    PostReceita @relation(fields: [id_receita], references: [id])
+  id_receita Int         // Chave estrangeira como Int
+
+  // Garante que um usuário só pode avaliar uma receita uma vez
+  @@unique([userId, id_receita])
+}
+
+// Modelo para a tabela 'follows' (Seguidores)
+model Follow {
+  created_at DateTime @default(now())
+
+  // Relação de quem segue
+  following_user_id Int // Chave estrangeira como Int
+  following         User  @relation("following", fields: [following_user_id], references: [id])
+
+  // Relação de quem é seguido
+  followed_user_id Int // Chave estrangeira como Int
+  followedBy       User  @relation("followedBy", fields: [followed_user_id], references: [id])
+
+  // Chave primária composta
+  @@id([following_user_id, followed_user_id])
 }
