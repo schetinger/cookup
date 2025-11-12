@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql" // Alterado conforme seu exemplo
+  provider = "sqlite" // Alterado conforme seu exemplo
   url      = env("DATABASE_URL")
 }
 
@@ -19,10 +19,10 @@ enum Role {
 // Modelo de Usuário baseado no seu DBML e exemplo
 model User {
   id        Int      @id @default(autoincrement()) // ID como Int
-  username  String?  @unique // Do seu DBML
+  username  String  @unique // Do seu DBML
   nickname  String?  // Do seu DBML
   role      Role     @default(USER) // Do seu DBML
-  bio       String?  @db.Text // Do seu DBML
+  bio       String?  // Do seu DBML
   createdAt DateTime @default(now()) // Boa prática, do seu exemplo
 
   // Relações
@@ -37,8 +37,8 @@ model User {
 model PostReceita {
   id          Int      @id @default(autoincrement()) // ID como Int
   title       String
-  ingredients String   @db.Text // @db.Text para 'text' no Postgres
-  body        String   @db.Text // @db.Text para 'text' no Postgres
+  ingredients String   // @db.Text para 'text' no Postgres
+  body        String    // @db.Text para 'text' no Postgres
   status      String?
   createdAt   DateTime @default(now())
 
@@ -55,7 +55,7 @@ model PostReceita {
 model Review {
   id         Int      @id @default(autoincrement()) // ID como Int
   title      String
-  body       String   @db.Text // @db.Text para 'text' no Postgres
+  body       String    // @db.Text para 'text' no Postgres
   rate       Int      // A nota (rating)
   status     String?
   createdAt  DateTime @default(now())
