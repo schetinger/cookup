@@ -1,0 +1,4 @@
+AUTH_SECRET="1234567890abcdef"
+AUTH_DISCORD_ID="fake_discord_id"
+AUTH_DISCORD_SECRET="fake_discord_secret"
+pnpm dev
