@@ -6,84 +6,109 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite" // Alterado conforme seu exemplo
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
-// Enum para os cargos de usuário
 enum Role {
   USER
   ADMIN
 }
 
-// Modelo de Usuário baseado no seu DBML e exemplo
-model User {
-  id        Int      @id @default(autoincrement()) // ID como Int
-  username  String  @unique // Do seu DBML
-  nickname  String?  // Do seu DBML
-  role      Role     @default(USER) // Do seu DBML
-  bio       String?  // Do seu DBML
-  createdAt DateTime @default(now()) // Boa prática, do seu exemplo
-
-  // Relações
-  posts          PostReceita[] // Receitas que o usuário criou
-  reviews        Review[]      // Reviews que o usuário fez
-  savedRecipes   PostReceita[] @relation("SavedRecipes") // Receitas salvas (M2M)
-  following      Follow[]      @relation("following") // Quem este usuário segue
-  followedBy     Follow[]      @relation("followedBy") // Quem segue este usuário
+enum Status {
+  RASCUNHO
+  PUBLICADO
+  ARQUIVADO
 }
 
-// Modelo de Receita (antigo postsReceita)
+model Account {
+  id                 Int      @id @default(autoincrement())
+  userId             Int
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?   // Campo para token de refresh
+  access_token       String?   // Campo para token de acesso
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?
+  session_state      String?
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           Int      @id @default(autoincrement())
+  sessionToken String   @unique
+  userId       Int
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String  @unique
+  emailVerified DateTime?
+  image     String?
+  username  String  @unique // Campo customizado
+  nickname  String  // Campo customizado
+  role      Role     @default(USER) // Campo customizado
+  bio       String?  // Campo customizado
+  createdAt DateTime @default(now()) // Campo customizado
+  posts          PostReceita[]
+  reviews        Review[]
+  savedRecipes   PostReceita[] @relation("SavedRecipes")
+  following      Follow[]      @relation("following")
+  followedBy     Follow[]      @relation("followedBy")
+  accounts       Account[]
+  sessions       Session[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  @@unique([identifier, token])
+  @@map("VerificationToken")
+}
+
 model PostReceita {
-  id          Int      @id @default(autoincrement()) // ID como Int
+  id          Int      @id @default(autoincrement())
   title       String
-  ingredients String   // @db.Text para 'text' no Postgres
-  body        String    // @db.Text para 'text' no Postgres
+  ingredients String
+  body        String
   status      String?
   createdAt   DateTime @default(now())
-
-  // Relação com o criador (User)
-  user    User     @relation(fields: [userId], references: [id])
-  userId  Int      // Chave estrangeira como Int
-
-  // Relações
-  reviews   Review[] // Reviews desta receita
-  savedBy   User[]   @relation("SavedRecipes") // Usuários que salvaram (M2M)
+  user        User     @relation(fields: [userId], references: [id])
+  userId      Int
+  reviews     Review[]
+  savedBy     User[]   @relation("SavedRecipes")
+  imageUrl    String?
 }
 
-// Modelo para Reviews
+
 model Review {
-  id         Int      @id @default(autoincrement()) // ID como Int
+  id         Int      @id @default(autoincrement())
   title      String
-  body       String    // @db.Text para 'text' no Postgres
-  rate       Int      // A nota (rating)
+  body       String
+  rate       Int
   status     String?
   createdAt  DateTime @default(now())
-
-  // Relação com User
-  user    User     @relation(fields: [userId], references: [id])
-  userId  Int      // Chave estrangeira como Int
-
-  // Relação com PostReceita
+  user       User     @relation(fields: [userId], references: [id])
+  userId     Int
   receita    PostReceita @relation(fields: [id_receita], references: [id])
-  id_receita Int         // Chave estrangeira como Int
-
-  // Garante que um usuário só pode avaliar uma receita uma vez
+  id_receita Int
   @@unique([userId, id_receita])
+  imageUrl  String?
 }
 
-// Modelo para a tabela 'follows' (Seguidores)
+
 model Follow {
-  created_at DateTime @default(now())
-
-  // Relação de quem segue
-  following_user_id Int // Chave estrangeira como Int
-  following         User  @relation("following", fields: [following_user_id], references: [id])
-
-  // Relação de quem é seguido
-  followed_user_id Int // Chave estrangeira como Int
-  followedBy       User  @relation("followedBy", fields: [followed_user_id], references: [id])
-
-  // Chave primária composta
+  created_at       DateTime @default(now())
+  following_user_id Int
+  following         User @relation("following", fields: [following_user_id], references: [id])
+  followed_user_id  Int
+  followedBy        User @relation("followedBy", fields: [followed_user_id], references: [id])
   @@id([following_user_id, followed_user_id])
 }
