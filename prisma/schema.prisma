@@ -7,10 +7,16 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// Enum para tipos de usuário
+
 enum Role {
   USER
   ADMIN
+}
+
+enum Status {
+  RASCUNHO
+  PUBLICADO
+  ARQUIVADO
 }
 
 model Account {
@@ -40,12 +46,11 @@ model Session {
 
 model User {
   id        Int      @id @default(autoincrement())
-  name      String?
-  email     String?  @unique
+  email     String  @unique
   emailVerified DateTime?
   image     String?
-  username  String?  @unique // Campo customizado
-  nickname  String?  // Campo customizado
+  username  String  @unique // Campo customizado
+  nickname  String  // Campo customizado
   role      Role     @default(USER) // Campo customizado
   bio       String?  // Campo customizado
   createdAt DateTime @default(now()) // Campo customizado
@@ -77,7 +82,9 @@ model PostReceita {
   userId      Int
   reviews     Review[]
   savedBy     User[]   @relation("SavedRecipes")
+  imageUrl    String?
 }
+
 
 model Review {
   id         Int      @id @default(autoincrement())
@@ -91,7 +98,9 @@ model Review {
   receita    PostReceita @relation(fields: [id_receita], references: [id])
   id_receita Int
   @@unique([userId, id_receita])
+  imageUrl  String?
 }
+
 
 model Follow {
   created_at       DateTime @default(now())
