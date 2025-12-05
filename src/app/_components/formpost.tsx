@@ -26,14 +26,13 @@ export function CriarReceita() {
     formData.append('nome', titulo);
     formData.append('descricao', ingredientes);
     formData.append('modoPreparo', modoPreparo);
-    formData.append('preco', '0');
 
     if (imagem) {
       formData.append('imagem', imagem);
     }
 
     try {
-      const response = await fetch('http://localhost:3000/produtos', {
+      const response = await fetch('/api/receitas', {
         method: 'POST',
         body: formData,
       });
@@ -56,7 +55,6 @@ export function CriarReceita() {
   };
 
   return (
-    // Container principal centralizado com fundo branco e sombra
     <div className="max-w-lg mx-auto mt-10 p-6 bg-white rounded-xl shadow-lg border border-gray-100">
       
       <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
@@ -65,7 +63,6 @@ export function CriarReceita() {
 
       <form onSubmit={handleSubmit} className="space-y-5">
         
-        {/* Campo Título */}
         <div className="flex flex-col">
           <label className="text-sm font-semibold text-gray-700 mb-1">
             Título da Receita
@@ -80,7 +77,6 @@ export function CriarReceita() {
           />
         </div>
 
-        {/* Campo Ingredientes */}
         <div className="flex flex-col">
           <label className="text-sm font-semibold text-gray-700 mb-1">
             Ingredientes
@@ -95,7 +91,6 @@ export function CriarReceita() {
           />
         </div>
 
-        {/* Campo Modo de Preparo */}
         <div className="flex flex-col">
           <label className="text-sm font-semibold text-gray-700 mb-1">
             Modo de Preparo
@@ -110,7 +105,6 @@ export function CriarReceita() {
           />
         </div>
 
-        {/* Campo Foto (Input File customizado) */}
         <div className="flex flex-col">
           <label className="text-sm font-semibold text-gray-700 mb-1">
             Foto do Prato
@@ -129,7 +123,6 @@ export function CriarReceita() {
           />
         </div>
 
-        {/* Botão de Salvar */}
         <button
           type="submit"
           disabled={loading}
@@ -143,7 +136,6 @@ export function CriarReceita() {
         </button>
       </form>
 
-      {/* Mensagem de Feedback */}
       {mensagem && (
         <div className={`mt-4 p-3 rounded-md text-center text-sm font-medium ${
           mensagem.includes('sucesso') 
