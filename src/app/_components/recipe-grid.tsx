@@ -3,10 +3,8 @@
 import Image from "next/image";
 import { Clock, Heart, Star } from "lucide-react";
 
-// Dados atualizados com as imagens locais da pasta public/images
 const recipes = [
-  // Usei o sanduíche aqui pois não vi imagem de panqueca na lista
-  { id: 1, title: "Sanduíche Gourmet", image: "/images/Sanduíche Gourmet.png", time: "15 min", rating: 4.6, likes: 256, category: "Lanche" },
+  { id: 1, title: "Pancakes de Mirtilo", image: "/images/Pancakes de Mirtilo.png", time: "25 min", rating: 4.8, likes: 342, category: "Café da Manhã" },
   { id: 2, title: "Sanduíche Gourmet", image: "/images/Sanduíche Gourmet.png", time: "15 min", rating: 4.6, likes: 256, category: "Lanche" },
   { id: 3, title: "Bolo de Chocolate", image: "/images/Bolo de Chocolate Premium.png", time: "60 min", rating: 4.9, likes: 523, category: "Sobremesa" },
   { id: 4, title: "Carbonara Clássica", image: "/images/Pasta Carbonara Clássica.png", time: "30 min", rating: 4.7, likes: 412, category: "Principal" },
