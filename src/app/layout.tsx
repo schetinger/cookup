@@ -2,8 +2,9 @@ import "~/styles/globals.css";
 
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
-
 import { TRPCReactProvider } from "~/trpc/react";
+import { Navbar } from "~/app/_components/navbar";
+import { Footer } from "~/app/_components/footer";
 
 export const metadata: Metadata = {
   title: "CookUP",
@@ -20,9 +21,18 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${geist.variable}`}>
-      <body>
-        <TRPCReactProvider>{children}</TRPCReactProvider>
+    <html lang="pt-BR" className={`${geist.variable}`}>
+      <body className="flex min-h-screen flex-col bg-white">
+        <TRPCReactProvider>
+          <Navbar />
+          
+          {/* O PULO DO GATO: pt-20 para compensar a navbar fixa */}
+          <main className="flex-1 pt-20">
+            {children}
+          </main>
+
+          <Footer />
+        </TRPCReactProvider>
       </body>
     </html>
   );
