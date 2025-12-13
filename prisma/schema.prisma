@@ -1,112 +1,126 @@
-datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
-}
+// prisma/schema.prisma
 
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
-
-enum Role {
-  USER
-  ADMIN
+datasource db {
+    provider = "sqlite"
+    url      = env("DATABASE_URL")
 }
 
-enum Status {
-  RASCUNHO
-  PUBLICADO
-  ARQUIVADO
-}
+// =========================================================
+// 1. MODELOS OBRIGATÓRIOS DO NEXT-AUTH (Para Autenticação)
+// =========================================================
 
 model Account {
-  id                 Int      @id @default(autoincrement())
-  userId             Int
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?   // Campo para token de refresh
-  access_token       String?   // Campo para token de acesso
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?
-  session_state      String?
-  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  @@unique([provider, providerAccountId])
+    id                String  @id @default(cuid())
+    userId            String
+    type              String
+    provider          String
+    providerAccountId String
+    refresh_token     String? // @db.Text
+    access_token      String? // @db.Text
+    expires_at        Int?
+    token_type        String?
+    scope             String?
+    id_token          String? // @db.Text
+    session_state     String?
+    user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([provider, providerAccountId])
 }
 
 model Session {
-  id           Int      @id @default(autoincrement())
-  sessionToken String   @unique
-  userId       Int
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model User {
-  id        Int      @id @default(autoincrement())
-  email     String  @unique
-  emailVerified DateTime?
-  image     String?
-  username  String  @unique // Campo customizado
-  nickname  String  // Campo customizado
-  role      Role     @default(USER) // Campo customizado
-  bio       String?  // Campo customizado
-  createdAt DateTime @default(now()) // Campo customizado
-  posts          PostReceita[]
-  reviews        Review[]
-  savedRecipes   PostReceita[] @relation("SavedRecipes")
-  following      Follow[]      @relation("following")
-  followedBy     Follow[]      @relation("followedBy")
-  accounts       Account[]
-  sessions       Session[]
+    id           String   @id @default(cuid())
+    sessionToken String   @unique
+    userId       String
+    expires      DateTime
+    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-  @@unique([identifier, token])
-  @@map("VerificationToken")
+    identifier String
+    token      String   @unique
+    expires    DateTime
+
+    @@unique([identifier, token])
+}
+
+// =========================================================
+// 2. MODELOS DO COOKUP (Seu Projeto)
+// =========================================================
+
+model User {
+    id            String    @id @default(cuid()) // T3 usa String/CUID geralmente
+    name          String?
+    email         String?   @unique
+    emailVerified DateTime?
+    image         String?
+    
+    // Seus campos personalizados
+    username      String?   @unique
+    nickname      String?
+    role          String    @default("USER")
+    bio           String?   
+    
+    createdAt     DateTime  @default(now())
+
+    // Relacionamentos
+    accounts      Account[]
+    sessions      Session[]
+    posts         PostReceita[]
+    reviews       Review[]
+    savedRecipes  PostReceita[] @relation("SavedRecipes")
+    following     Follow[]      @relation("following")
+    followedBy    Follow[]      @relation("followedBy")
 }
 
 model PostReceita {
-  id          Int      @id @default(autoincrement())
-  title       String
-  ingredients String
-  body        String
-  status      String?
-  createdAt   DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id])
-  userId      Int
-  reviews     Review[]
-  savedBy     User[]   @relation("SavedRecipes")
-  imageUrl    String?
-}
+    id          Int      @id @default(autoincrement())
+    title       String
+    ingredients String
+    body        String
+    status      String?  @default("DRAFT")
+    createdAt   DateTime @default(now())
 
+    // Campos para a Home Page (T3 Stack recomenda camelCase)
+    imageUrl    String?
+    category    String?
+    prepTime    String?
+
+    // Relacionamento com User
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId String
+
+    reviews Review[]
+    savedBy User[]   @relation("SavedRecipes")
+}
 
 model Review {
-  id         Int      @id @default(autoincrement())
-  title      String
-  body       String
-  rate       Int
-  status     String?
-  createdAt  DateTime @default(now())
-  user       User     @relation(fields: [userId], references: [id])
-  userId     Int
-  receita    PostReceita @relation(fields: [id_receita], references: [id])
-  id_receita Int
-  @@unique([userId, id_receita])
-  imageUrl  String?
+    id        Int      @id @default(autoincrement())
+    title     String
+    body      String
+    rate      Int
+    createdAt DateTime @default(now())
+
+    user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+    userId     String
+    
+    receita    PostReceita @relation(fields: [id_receita], references: [id], onDelete: Cascade)
+    id_receita Int
+
+    @@unique([userId, id_receita])
 }
 
-
 model Follow {
-  created_at       DateTime @default(now())
-  following_user_id Int
-  following         User @relation("following", fields: [following_user_id], references: [id])
-  followed_user_id  Int
-  followedBy        User @relation("followedBy", fields: [followed_user_id], references: [id])
-  @@id([following_user_id, followed_user_id])
+    created_at DateTime @default(now())
+
+    following_user_id String
+    following         User   @relation("following", fields: [following_user_id], references: [id], onDelete: Cascade)
+
+    followed_user_id  String
+    followedBy        User   @relation("followedBy", fields: [followed_user_id], references: [id], onDelete: Cascade)
+
+    @@id([following_user_id, followed_user_id])
 }
