@@ -1,109 +1,142 @@
 import { api } from "~/trpc/server"; 
 import React from 'react'; 
 import { notFound } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft, User, MessageSquare } from "lucide-react"; // Ícones úteis
 
-// Definimos o componente como assíncrono para poder usar 'await'
+// IMPORTAÇÃO DOS ESTILOS:
+// Este arquivo (sec3.module.css) é o mesmo usado no login e cria o layout de duas colunas.
+import styles from "~/styles/sec3.module.css"; 
+
+// Importa um asset de imagem (assumindo que você tem no seu projeto)
+import pasta from "~/assets/images/pasta.jpg"; 
+
+
 export default async function ProfilePage() {
   
   // 1. CHAMA A PROCEDURE TRPC PARA BUSCAR OS DADOS REAIS
-  const profileData = await api.profile.getProfileData.query();
+  // O seu TRPC precisa retornar todos esses campos:
+  const profileData = await api.profile.getProfileData.query(); 
 
   if (!profileData) {
-    // Isso deve redirecionar ou mostrar uma página de 404
     notFound(); 
   }
 
+  // Desestruturamos os dados do TRPC
   const { 
     username, 
     fullName, 
     bio, 
-    followersCount, 
-    followingCount, 
-    recipesCount, 
+    memberSince, // Deve ser um campo retornado pelo seu TRPC/Prisma (ex: createdAt)
     profileImage, 
-    recipes 
   } = profileData;
+
+  // Formata a data de membro (exemplo)
+  const memberDate = new Date(memberSince || new Date()).toLocaleDateString('pt-BR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
 
 
   return (
-    // Container Principal: Centraliza e limita a largura
-    <div className="mx-auto max-w-5xl py-10 px-4 sm:px-6 lg:px-8">
-      
-      {/* 1. SEÇÃO DE CABEÇALHO (Profile Header - Estilo Pinterest) */}
-      <header className="flex flex-col items-center pb-6 mb-8 text-center">
+    // Usa a mesma estrutura de container do login para ter o layout de duas colunas
+    <div className={`${styles.bodyCadastro} h-screen flex items-center justify-center`}>
+      <div className={`${styles.containerCadastro} overflow-hidden`}>
         
-        {/* Imagem de Perfil Grande */}
-        <div className="w-28 h-28 sm:w-40 sm:h-40 flex-shrink-0 mb-4">
-          <img
-            src={profileImage}
-            alt="Foto de Perfil"
-            className="w-full h-full rounded-full object-cover border-2 border-gray-300"
-          />
-        </div>
-        
-        {/* Nome Completo e Username */}
-        <h1 className="text-3xl font-bold mb-1">{fullName}</h1>
-        <p className="text-md text-gray-500 mb-4">@{username}</p>
-        
-        {/* Estatísticas (Seguidores, etc.) - Colocadas abaixo do nome */}
-        <div className="flex justify-center space-x-4 mb-4 text-sm">
-          <p>
-            <span className="font-semibold">{followersCount.toLocaleString()}</span> seguidores
-          </p>
-          <p>
-            <span className="font-semibold">{followingCount}</span> seguindo
+        {/* LADO ESQUERDO: Visual Area (Fundo com imagem) */}
+        <div
+          className={styles.visualArea}
+          style={{ backgroundImage: `url(${pasta.src})` }}
+        >
+          <h1 className={styles.visualTitle}>Seu Perfil</h1>
+          <p className={styles.visualSubtitle}>
+            Personalize sua conta e mostre ao mundo sua paixão pela culinária.
           </p>
         </div>
-        
-        {/* Bio */}
-        <p className="text-sm text-gray-700 max-w-sm mx-auto mb-6">
-          {bio || "Nenhuma biografia adicionada."}
-        </p>
 
-        {/* Botões de Ação */}
-        <div className="flex space-x-3">
-            <button className="bg-gray-200 hover:bg-gray-300 text-sm font-semibold py-2 px-6 rounded-full transition duration-150">
+        {/* LADO DIREITO: Form Area (Conteúdo do Perfil) */}
+        <div className={styles.formArea}>
+          
+          {/* Cabeçalho */}
+          <div className="flex justify-between items-center mb-6">
+            <Link href="/" className="text-sm text-gray-500 hover:text-gray-700 flex items-center">
+              <ArrowLeft size={16} className="mr-1" /> Voltar
+            </Link>
+            <span className="text-lg font-bold">CookUp</span>
+          </div>
+
+          {/* Área Principal do Perfil */}
+          <div className="flex flex-col items-center text-center p-4">
+            
+            {/* Imagem de Perfil */}
+            <div className="w-28 h-28 flex-shrink-0 mb-4 rounded-full bg-orange-100 p-1 border-2 border-orange-300">
+              <img
+                src={profileImage || "/default-avatar.png"}
+                alt="Foto de Perfil"
+                // A imagem de perfil da Maria não tem imagem real, vamos simular a letra 'M'
+                // Se a profileImage for nula, mostramos a primeira letra do nome.
+                className="w-full h-full rounded-full object-cover"
+              />
+              {/* Para simular a letra 'M' como na imagem original: */}
+              {!profileImage && (
+                 <div className="w-full h-full rounded-full bg-orange-200 flex items-center justify-center">
+                    <span className="text-5xl font-semibold text-orange-600">{fullName ? fullName[0] : 'U'}</span>
+                 </div>
+              )}
+            </div>
+            
+            {/* Nome e Tag de Usuário */}
+            <h1 className="text-xl font-semibold mt-2 mb-1">{fullName}</h1>
+            <span className="text-xs font-medium bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full mb-4">Usuário</span>
+            <p className="text-sm text-gray-600 mb-6">@{username}</p>
+
+            {/* Detalhes do Perfil */}
+            <div className="w-full text-left space-y-3 border-t pt-4">
+                
+                {/* Username */}
+                <div className="flex items-start">
+                    <User size={16} className="text-gray-400 mt-1 mr-2 flex-shrink-0" />
+                    <div>
+                        <p className="text-xs text-gray-500">Username</p>
+                        <p className="text-sm font-medium">@{username}</p>
+                    </div>
+                </div>
+
+                {/* Nome/Apelido */}
+                <div className="flex items-start">
+                    <User size={16} className="text-gray-400 mt-1 mr-2 flex-shrink-0" />
+                    <div>
+                        <p className="text-xs text-gray-500">Apelido</p>
+                        <p className="text-sm font-medium">{fullName}</p>
+                    </div>
+                </div>
+
+                {/* Bio */}
+                <div className="flex items-start">
+                    <MessageSquare size={16} className="text-gray-400 mt-1 mr-2 flex-shrink-0" />
+                    <div>
+                        <p className="text-xs text-gray-500">Bio</p>
+                        <p className="text-sm text-gray-700">{bio || "Nenhuma biografia adicionada."}</p>
+                    </div>
+                </div>
+
+                {/* Membro Desde */}
+                <div className="text-sm text-gray-500 pt-2 border-t mt-4">
+                    Membro desde: <span className="font-medium text-gray-700">{memberDate}</span>
+                </div>
+            </div>
+
+          </div>
+
+          {/* Botão de Ação */}
+          <div className="mt-8">
+            <button className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 rounded-xl transition duration-150 shadow-lg">
               Editar Perfil
-            </button>
-            <button className="bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-2 px-6 rounded-full transition duration-150">
-              Compartilhar
-            </button>
-        </div>
-      </header>
-      
-      {/* 2. BARRA DE NAVEGAÇÃO / GRADE DE RECEITAS */}
-      <section>
-        {/* Barra de Navegação de Conteúdo (Pins/Receitas) */}
-        <div className="flex justify-center border-t pt-4 mb-6">
-          <div className="flex space-x-8">
-            <button className="text-sm font-bold border-b-2 border-black pb-2 text-gray-900">
-              TODAS AS RECEITAS ({recipesCount})
-            </button>
-            <button className="text-sm font-medium pb-2 text-gray-500">
-              SALVAS
             </button>
           </div>
         </div>
-
-        {/* Grade de Fotos (Estilo Pinterest, usando colunas responsivas) */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {recipes.map((recipe) => (
-            // Note: O estilo Pinterest real usa layout 'masonry', mas
-            // o grid normal é mais fácil de implementar com Tailwind.
-            <div key={recipe.id} className="relative overflow-hidden rounded-lg shadow-md hover:shadow-lg transition duration-300">
-              <img
-                src={recipe.imageUrl}
-                alt={`Receita ${recipe.id}`}
-                className="w-full h-full object-cover transition duration-300 transform hover:scale-105"
-              />
-              {/* O nome da receita pode ir no hover ou abaixo da imagem */}
-              <div className="absolute bottom-0 left-0 p-2 bg-black bg-opacity-30 w-full">
-                <p className="text-white text-xs font-semibold">Título da Receita {recipe.id}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+      </div>
     </div>
   );
 }
