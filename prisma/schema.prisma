@@ -1,74 +1,112 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
 
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
-datasource db {
-    provider = "sqlite"
-    // NOTE: When using mysql or sqlserver, uncomment the @db.Text annotations in model Account below
-    // Further reading:
-    // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
-    // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
-    url      = env("DATABASE_URL")
+
+enum Role {
+  USER
+  ADMIN
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    createdBy   User   @relation(fields: [createdById], references: [id])
-    createdById String
-
-    @@index([name])
+enum Status {
+  RASCUNHO
+  PUBLICADO
+  ARQUIVADO
 }
 
-// Necessary for Next auth
 model Account {
-    id                       String  @id @default(cuid())
-    userId                   String
-    type                     String
-    provider                 String
-    providerAccountId        String
-    refresh_token            String? // @db.Text
-    access_token             String? // @db.Text
-    expires_at               Int?
-    token_type               String?
-    scope                    String?
-    id_token                 String? // @db.Text
-    session_state            String?
-    user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-    refresh_token_expires_in Int?
-
-    @@unique([provider, providerAccountId])
+  id                 Int      @id @default(autoincrement())
+  userId             Int
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?   // Campo para token de refresh
+  access_token       String?   // Campo para token de acesso
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?
+  session_state      String?
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([provider, providerAccountId])
 }
 
 model Session {
-    id           String   @id @default(cuid())
-    sessionToken String   @unique
-    userId       String
-    expires      DateTime
-    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           Int      @id @default(autoincrement())
+  sessionToken String   @unique
+  userId       Int
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model User {
-    id            String    @id @default(cuid())
-    name          String?
-    email         String?   @unique
-    emailVerified DateTime?
-    image         String?
-    accounts      Account[]
-    sessions      Session[]
-    posts         Post[]
+  id        Int      @id @default(autoincrement())
+  email     String  @unique
+  emailVerified DateTime?
+  image     String?
+  username  String  @unique // Campo customizado
+  nickname  String  // Campo customizado
+  role      Role     @default(USER) // Campo customizado
+  bio       String?  // Campo customizado
+  createdAt DateTime @default(now()) // Campo customizado
+  posts          PostReceita[]
+  reviews        Review[]
+  savedRecipes   PostReceita[] @relation("SavedRecipes")
+  following      Follow[]      @relation("following")
+  followedBy     Follow[]      @relation("followedBy")
+  accounts       Account[]
+  sessions       Session[]
 }
 
 model VerificationToken {
-    identifier String
-    token      String   @unique
-    expires    DateTime
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  @@unique([identifier, token])
+  @@map("VerificationToken")
+}
 
-    @@unique([identifier, token])
+model PostReceita {
+  id          Int      @id @default(autoincrement())
+  title       String
+  ingredients String
+  body        String
+  status      String?
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      Int
+  reviews     Review[]
+  savedBy     User[]   @relation("SavedRecipes")
+  imageUrl    String?
+}
+
+
+model Review {
+  id         Int      @id @default(autoincrement())
+  title      String
+  body       String
+  rate       Int
+  status     String?
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     Int
+  receita    PostReceita @relation(fields: [id_receita], references: [id])
+  id_receita Int
+  @@unique([userId, id_receita])
+  imageUrl  String?
+}
+
+
+model Follow {
+  created_at       DateTime @default(now())
+  following_user_id Int
+  following         User @relation("following", fields: [following_user_id], references: [id])
+  followed_user_id  Int
+  followedBy        User @relation("followedBy", fields: [followed_user_id], references: [id])
+  @@id([following_user_id, followed_user_id])
 }

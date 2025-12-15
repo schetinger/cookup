@@ -1,55 +1,55 @@
-"use client"
-import Image from 'next/image'
-import { useState } from 'react';
-export function Navbar ({ className }:{className:string}){
-    const [searching, setSearching] = useState(false);
-    return(
-        <header className={className}>
-      <nav className="bg-white flex items-center justify-between w-full h-full p-4 ">
-        <a href='/' className='flex'>
-             <Image
-            src="/logo.jpeg"
-            alt="CookUp"
-            width={70}
-            height={70}
-        />
-            <span className=" font-mono font-bold text-2xl mt-6">CookUP</span>
-        
-        </a>
-       
-        <ul className=" font-mono space-x-3 flex">
-            {searching ? ( 
-                <form className='relative flex items-center'>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="absolute ml-2  size-6">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-                            </svg>
-                        <input autoFocus type='text' placeholder='Ex:Risoto...' className=" shadow-gray-500 shadow-xl bg-red-500 rounded-4xl py-3.5 px-8 text-xs flex items-center justify-center gap-2 focus:outline-none"
-                        />  
-                        <button className='right-3 absolute'onClick={() => setSearching(false)}>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                            </svg>
+"use client";
 
-                        </button>
-                </form>
+import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
 
-                ):(
-                <button 
+export function Navbar({ className = "" }: { className?: string }) {
+  const [searching, setSearching] = useState(false);
+
+  return (
+    <header className={`fixed top-0 left-0 w-full z-50 border-b bg-white/95 backdrop-blur-md ${className}`}>
+      <nav className="container mx-auto flex h-20 items-center justify-between px-4">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2">
+          <Image src="/logo.jpeg" alt="CookUp" width={60} height={60} className="object-contain" />
+          <span className="mt-2 font-mono text-2xl font-bold">CookUP</span>
+        </Link>
+
+        {/* Menu */}
+        <ul className="flex items-center space-x-4 font-mono">
+          <li>
+            {searching ? (
+              <form className="relative flex items-center" onSubmit={(e) => e.preventDefault()}>
+                <input
+                  autoFocus
+                  type="text"
+                  placeholder="Ex: Risoto..."
+                  className="flex h-10 w-64 items-center justify-center rounded-full bg-red-500 px-10 text-sm text-white shadow-xl focus:outline-none"
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 text-white"
+                  onClick={() => setSearching(false)}
+                >
+                  X
+                </button>
+              </form>
+            ) : (
+              <button
                 onClick={() => setSearching(true)}
-                className="bg-gray-100 rounded-4xl py-2.5 px-8 text-xs hover:bg-red-500 duration-300 flex items-center justify-center gap-2 hover:shadow-gray-500 shadow-xl">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className=" size-6">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-                </svg>
+                className="flex items-center gap-2 rounded-full bg-gray-100 px-6 py-2.5 text-xs shadow-md hover:bg-red-500 hover:text-white transition-all"
+              >
                 <span>Pesquisar</span>
-            </button>)}
-            
-            <a className="hover:shadow-gray-500 hover:shadow-xl px-8 py-2.5 duration-300  rounded-md hover:bg-red-500" href="home"> Home</a>
-            <a className="hover:shadow-gray-500 hover:shadow-xl px-8 py-2.5 duration-300 rounded-md hover:bg-red-500" href="topreceitas">Top Receitas</a>
-            <a className="hover:shadow-gray-500 hover:shadow-xl px-8 py-2.5 duration-300 rounded-md hover:bg-red-500" href="login">Entrar</a>
-            <a className="hover:shadow-gray-500 hover:shadow-xl px-8 py-2.5 duration-300 rounded-md bg-red-400 hover:bg-red-500" href="register">Cadastro</a>
+              </button>
+            )}
+          </li>
+          <li><Link href="/home" className="hover:text-red-500 transition-colors">Home</Link></li>
+          <li><Link href="/topreceitas" className="hover:text-red-500 transition-colors">Top Receitas</Link></li>
+          <li><Link href="/login" className="hover:text-red-500 transition-colors">Entrar</Link></li>
+          <li><Link href="/register" className="rounded-md bg-red-400 px-6 py-2.5 text-white hover:bg-red-500 transition-all">Cadastro</Link></li>
         </ul>
-
       </nav>
     </header>
-    )
+  );
 }
