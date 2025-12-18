@@ -21,12 +21,12 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="pt-BR" className={`${geist.variable}`}>
-      <body className="flex min-h-screen flex-col bg-white">
+    <html lang="pt-BR" className={geist.variable}>
+      {/* ADICIONADO: font-sans para aplicar a fonte Geist em tudo */}
+      <body className="font-sans flex min-h-screen flex-col bg-white text-slate-900 antialiased">
         <TRPCReactProvider>
           <Navbar />
           
-          {/* O PULO DO GATO: pt-20 para compensar a navbar fixa */}
           <main className="flex-1 pt-20">
             {children}
           </main>

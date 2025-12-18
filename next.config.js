@@ -1,8 +1,8 @@
-/** @type {import("next").NextConfig} */
-const config = {
-  images: {
-    domains: ["images.unsplash.com"], 
-  },
-};
+// /** @type {import("next").NextConfig} */
+// const config = {
+//   images: {
+//     domains: ["images.unsplash.com"], 
+//   },
+// };
 
-export default config;
+// export default config;

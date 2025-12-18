@@ -1,74 +1,137 @@
 "use client";
 
-import Image from "next/image";
-import { api } from "~/trpc/react"; // Ajuste o import conforme seu projeto
+import { useState, useEffect } from "react";
+import { api } from "~/trpc/react";
+import { AtSign, User, FileText, Calendar, ArrowLeft } from "lucide-react";
 
 export default function PerfilPage() {
-  // 1. ARRUMANDO O ERRO: Use apenas o nome do procedimento. 
-  // O tRPC já sabe que é uma query. Não adicione ".query" no caminho.
+  const utils = api.useUtils();
   const { data: profile, isLoading, error } = api.profile.getProfileData.useQuery();
+  
+  // Hook para salvar os dados
+  const updateProfile = api.profile.updateProfile.useMutation({
+    onSuccess: () => {
+      // Atualiza os dados na tela pegando o que acabou de ser salvo no banco
+      void utils.profile.getProfileData.invalidate();
+      setIsEditing(false);
+      alert("Perfil atualizado com sucesso!");
+    },
+    onError: (err) => {
+      alert("Erro ao salvar: " + err.message);
+    }
+  });
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    username: "",
+    bio: ""
+  });
+
+  // Sincroniza o formulário sempre que os dados do perfil carregarem
+  useEffect(() => {
+    if (profile) {
+      setFormData({
+        name: profile.name ?? "",
+        username: profile.username ?? "",
+        bio: profile.bio ?? ""
+      });
+    }
+  }, [profile]);
+
+  const startEditing = () => {
+    setIsEditing(true);
+  };
 
   if (isLoading) return <div className="p-10 text-center">Carregando perfil...</div>;
-  
-  // Se der o erro "No procedure found", verifique se no seu router 
-  // o nome é 'getProfileData' e se ele está dentro de 'profile'.
-  if (error) return <div className="p-10 text-red-500">Erro: {error.message}</div>;
+  if (error) return <div className="p-10 text-red-500 text-center">Erro: {error.message}</div>;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#FDFBF9] p-4">
+    <div className="flex min-h-screen items-center justify-center bg-[#FDFBF9] p-4 md:p-8 pt-24">
       <div className="flex w-full max-w-5xl overflow-hidden rounded-3xl bg-white shadow-2xl">
         
-        {/* Lado Esquerdo - Imagem Decorativa */}
+        {/* Lado Esquerdo - Imagem */}
         <div className="relative hidden w-1/2 md:block">
           <img 
             src="https://images.unsplash.com/photo-1473093226795-af9932fe5856?q=80&w=1000" 
             alt="Pasta" 
             className="h-full w-full object-cover"
           />
-          <div className="absolute inset-0 flex flex-col justify-center bg-black/30 p-16 text-white backdrop-blur-[2px]">
+          <div className="absolute inset-0 flex flex-col justify-center bg-black/40 p-16 text-white backdrop-blur-[1px]">
             <h1 className="font-serif text-5xl font-light">Seu Perfil</h1>
-            <p className="mt-4 text-lg opacity-90">
-              Personalize sua conta e mostre ao mundo sua paixão pela culinária.
-            </p>
           </div>
         </div>
 
         {/* Lado Direito - Informações */}
-        <div className="w-full p-8 md:w-1/2 lg:p-16">
-          <div className="flex justify-between items-center mb-12">
-            <button className="text-gray-400 hover:text-gray-600 transition flex items-center gap-2">
-              <span>←</span> Voltar
+        <div className="w-full p-8 md:w-1/2 lg:p-14 bg-white">
+          <div className="flex justify-between items-center mb-10">
+            <button className="text-gray-400 hover:text-gray-600 flex items-center gap-2 text-sm font-medium">
+              <ArrowLeft size={16} /> Voltar
             </button>
             <div className="flex items-center gap-2">
-              <span className="text-orange-600">🍳</span>
-              <span className="font-serif font-bold text-gray-800">CookUp</span>
+              <span className="text-orange-600 text-xl">🍳</span>
+              <span className="font-serif font-bold text-gray-800 tracking-tight">CookUp</span>
             </div>
           </div>
 
-          {/* Avatar dinâmico */}
-          <div className="flex flex-col items-center mb-10">
-            <div className="h-24 w-24 rounded-full bg-orange-50 border-2 border-orange-100 flex items-center justify-center text-orange-500 text-3xl font-serif mb-4 shadow-sm">
-              {profile?.name?.charAt(0) || "U"}
+          <div className="flex flex-col items-center mb-8">
+            <div className="h-28 w-28 rounded-full bg-orange-50 border-[3px] border-orange-100 flex items-center justify-center overflow-hidden text-orange-500 text-4xl mb-4">
+              {profile?.image ? <img src={profile.image} alt="Avatar" className="h-full w-full object-cover" /> : profile?.name?.charAt(0)}
             </div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-2xl font-serif text-gray-800">{profile?.name}</h2>
-              <span className="text-[10px] uppercase tracking-widest bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-bold">
-                Usuário
-              </span>
+            
+            <div className="flex items-center gap-3">
+              {isEditing ? (
+                <input 
+                  className="text-2xl font-serif text-gray-800 border-b border-orange-300 focus:outline-none text-center"
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                />
+              ) : (
+                <h2 className="text-2xl font-serif text-gray-800">{profile?.name}</h2>
+              )}
             </div>
-            <p className="text-gray-400">@{profile?.username}</p>
           </div>
 
-          {/* Lista de Informações */}
-          <div className="space-y-6">
-            <InfoItem label="Username" value={`@${profile?.username}`} icon="at" />
-            <InfoItem label="Apelido" value={profile?.name} icon="user" />
-            <InfoItem label="Bio" value={profile?.bio || "Sem biografia definida."} icon="text" />
-            <InfoItem label="Membro desde" value={profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString('pt-BR') : "---"} icon="calendar" />
+          <div className="space-y-5 border-t border-gray-50 pt-8">
+            <InfoItem 
+              label="Username" 
+              icon={<AtSign size={16} />} 
+              isEditing={isEditing}
+              value={isEditing ? formData.username : (profile?.username ? `@${profile.username}` : "Não definido")}
+              onChange={(val) => setFormData({...formData, username: val})}
+            />
+            <InfoItem 
+              label="Bio" 
+              icon={<FileText size={16} />} 
+              isEditing={isEditing}
+              isTextArea
+              value={isEditing ? formData.bio : (profile?.bio || "Nenhuma bio definida.")}
+              onChange={(val) => setFormData({...formData, bio: val})}
+            />
+            {!isEditing && (
+               <div className="flex flex-col">
+                  <div className="flex items-center gap-2 mb-1 text-gray-400">
+                    <Calendar size={16} /> <p className="text-[11px] font-bold uppercase">Membro desde</p>
+                  </div>
+                  <p className="text-gray-700 pl-6">{profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString('pt-BR') : "---"}</p>
+               </div>
+            )}
           </div>
 
-          <button className="mt-12 w-full rounded-xl bg-[#EE6338] py-4 text-white font-semibold shadow-lg shadow-orange-200 hover:bg-[#d55630] transition-all transform active:scale-[0.98]">
-            Editar Perfil
+          {/* Lógica de Salvamento conectada ao Banco */}
+          <button 
+            onClick={() => {
+              if (isEditing) {
+                // Chama a função que grava no SQLite
+                updateProfile.mutate(formData);
+              } else {
+                startEditing();
+              }
+            }}
+            disabled={updateProfile.isPending}
+            className="mt-10 w-full rounded-2xl bg-[#EE6338] py-4 text-white font-bold shadow-xl hover:bg-[#d55630] transition-all disabled:opacity-50"
+          >
+            {updateProfile.isPending ? "Salvando..." : isEditing ? "Salvar Alterações" : "Editar Perfil"}
           </button>
         </div>
       </div>
@@ -76,15 +139,35 @@ export default function PerfilPage() {
   );
 }
 
-function InfoItem({ label, value, icon }: { label: string; value?: string; icon: string }) {
+function InfoItem({ 
+  label, value, icon, isEditing, isTextArea, onChange 
+}: { 
+  label: string; value?: string | null; icon: React.ReactNode; 
+  isEditing: boolean; isTextArea?: boolean; onChange: (val: string) => void 
+}) {
   return (
-    <div className="group">
-      <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1 flex items-center gap-2">
-        <span className="opacity-50">#</span> {label}
-      </p>
-      <p className="text-gray-700 font-medium group-hover:text-orange-600 transition-colors">
-        {value}
-      </p>
+    <div className="group flex flex-col">
+      <div className="flex items-center gap-2 mb-1">
+        <span className="text-gray-400">{icon}</span>
+        <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">{label}</p>
+      </div>
+      {isEditing ? (
+        isTextArea ? (
+          <textarea 
+            className="ml-6 p-2 text-[15px] border rounded-lg focus:ring-1 focus:ring-orange-500 outline-none w-full"
+            value={value ?? ""}
+            onChange={(e) => onChange(e.target.value)}
+          />
+        ) : (
+          <input 
+            className="ml-6 p-1 text-[15px] border-b focus:border-orange-500 outline-none w-full"
+            value={value ?? ""}
+            onChange={(e) => onChange(e.target.value)}
+          />
+        )
+      ) : (
+        <p className="text-gray-700 font-medium text-[15px] pl-6">{value ?? "Não informado"}</p>
+      )}
     </div>
   );
 }
