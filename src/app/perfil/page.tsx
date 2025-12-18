@@ -1,142 +1,90 @@
-import { api } from "~/trpc/server"; 
-import React from 'react'; 
-import { notFound } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft, User, MessageSquare } from "lucide-react"; // Ícones úteis
+"use client";
 
-// IMPORTAÇÃO DOS ESTILOS:
-// Este arquivo (sec3.module.css) é o mesmo usado no login e cria o layout de duas colunas.
-import styles from "~/styles/sec3.module.css"; 
+import Image from "next/image";
+import { api } from "@/trpc/react"; // Ajuste o import conforme seu projeto
 
-// Importa um asset de imagem (assumindo que você tem no seu projeto)
-import pasta from "~/assets/images/pasta.jpg"; 
+export default function PerfilPage() {
+  // 1. ARRUMANDO O ERRO: Use apenas o nome do procedimento. 
+  // O tRPC já sabe que é uma query. Não adicione ".query" no caminho.
+  const { data: profile, isLoading, error } = api.profile.getProfileData.useQuery();
 
-
-export default async function ProfilePage() {
+  if (isLoading) return <div className="p-10 text-center">Carregando perfil...</div>;
   
-  // 1. CHAMA A PROCEDURE TRPC PARA BUSCAR OS DADOS REAIS
-  // O seu TRPC precisa retornar todos esses campos:
-  const profileData = await api.profile.getProfileData.query(); 
-
-  if (!profileData) {
-    notFound(); 
-  }
-
-  // Desestruturamos os dados do TRPC
-  const { 
-    username, 
-    fullName, 
-    bio, 
-    memberSince, // Deve ser um campo retornado pelo seu TRPC/Prisma (ex: createdAt)
-    profileImage, 
-  } = profileData;
-
-  // Formata a data de membro (exemplo)
-  const memberDate = new Date(memberSince || new Date()).toLocaleDateString('pt-BR', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  });
-
+  // Se der o erro "No procedure found", verifique se no seu router 
+  // o nome é 'getProfileData' e se ele está dentro de 'profile'.
+  if (error) return <div className="p-10 text-red-500">Erro: {error.message}</div>;
 
   return (
-    // Usa a mesma estrutura de container do login para ter o layout de duas colunas
-    <div className={`${styles.bodyCadastro} h-screen flex items-center justify-center`}>
-      <div className={`${styles.containerCadastro} overflow-hidden`}>
+    <div className="flex min-h-screen items-center justify-center bg-[#FDFBF9] p-4">
+      <div className="flex w-full max-w-5xl overflow-hidden rounded-3xl bg-white shadow-2xl">
         
-        {/* LADO ESQUERDO: Visual Area (Fundo com imagem) */}
-        <div
-          className={styles.visualArea}
-          style={{ backgroundImage: `url(${pasta.src})` }}
-        >
-          <h1 className={styles.visualTitle}>Seu Perfil</h1>
-          <p className={styles.visualSubtitle}>
-            Personalize sua conta e mostre ao mundo sua paixão pela culinária.
-          </p>
+        {/* Lado Esquerdo - Imagem Decorativa */}
+        <div className="relative hidden w-1/2 md:block">
+          <img 
+            src="https://images.unsplash.com/photo-1473093226795-af9932fe5856?q=80&w=1000" 
+            alt="Pasta" 
+            className="h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 flex flex-col justify-center bg-black/30 p-16 text-white backdrop-blur-[2px]">
+            <h1 className="font-serif text-5xl font-light">Seu Perfil</h1>
+            <p className="mt-4 text-lg opacity-90">
+              Personalize sua conta e mostre ao mundo sua paixão pela culinária.
+            </p>
+          </div>
         </div>
 
-        {/* LADO DIREITO: Form Area (Conteúdo do Perfil) */}
-        <div className={styles.formArea}>
-          
-          {/* Cabeçalho */}
-          <div className="flex justify-between items-center mb-6">
-            <Link href="/" className="text-sm text-gray-500 hover:text-gray-700 flex items-center">
-              <ArrowLeft size={16} className="mr-1" /> Voltar
-            </Link>
-            <span className="text-lg font-bold">CookUp</span>
-          </div>
-
-          {/* Área Principal do Perfil */}
-          <div className="flex flex-col items-center text-center p-4">
-            
-            {/* Imagem de Perfil */}
-            <div className="w-28 h-28 flex-shrink-0 mb-4 rounded-full bg-orange-100 p-1 border-2 border-orange-300">
-              <img
-                src={profileImage || "/default-avatar.png"}
-                alt="Foto de Perfil"
-                // A imagem de perfil da Maria não tem imagem real, vamos simular a letra 'M'
-                // Se a profileImage for nula, mostramos a primeira letra do nome.
-                className="w-full h-full rounded-full object-cover"
-              />
-              {/* Para simular a letra 'M' como na imagem original: */}
-              {!profileImage && (
-                 <div className="w-full h-full rounded-full bg-orange-200 flex items-center justify-center">
-                    <span className="text-5xl font-semibold text-orange-600">{fullName ? fullName[0] : 'U'}</span>
-                 </div>
-              )}
-            </div>
-            
-            {/* Nome e Tag de Usuário */}
-            <h1 className="text-xl font-semibold mt-2 mb-1">{fullName}</h1>
-            <span className="text-xs font-medium bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full mb-4">Usuário</span>
-            <p className="text-sm text-gray-600 mb-6">@{username}</p>
-
-            {/* Detalhes do Perfil */}
-            <div className="w-full text-left space-y-3 border-t pt-4">
-                
-                {/* Username */}
-                <div className="flex items-start">
-                    <User size={16} className="text-gray-400 mt-1 mr-2 flex-shrink-0" />
-                    <div>
-                        <p className="text-xs text-gray-500">Username</p>
-                        <p className="text-sm font-medium">@{username}</p>
-                    </div>
-                </div>
-
-                {/* Nome/Apelido */}
-                <div className="flex items-start">
-                    <User size={16} className="text-gray-400 mt-1 mr-2 flex-shrink-0" />
-                    <div>
-                        <p className="text-xs text-gray-500">Apelido</p>
-                        <p className="text-sm font-medium">{fullName}</p>
-                    </div>
-                </div>
-
-                {/* Bio */}
-                <div className="flex items-start">
-                    <MessageSquare size={16} className="text-gray-400 mt-1 mr-2 flex-shrink-0" />
-                    <div>
-                        <p className="text-xs text-gray-500">Bio</p>
-                        <p className="text-sm text-gray-700">{bio || "Nenhuma biografia adicionada."}</p>
-                    </div>
-                </div>
-
-                {/* Membro Desde */}
-                <div className="text-sm text-gray-500 pt-2 border-t mt-4">
-                    Membro desde: <span className="font-medium text-gray-700">{memberDate}</span>
-                </div>
-            </div>
-
-          </div>
-
-          {/* Botão de Ação */}
-          <div className="mt-8">
-            <button className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-3 rounded-xl transition duration-150 shadow-lg">
-              Editar Perfil
+        {/* Lado Direito - Informações */}
+        <div className="w-full p-8 md:w-1/2 lg:p-16">
+          <div className="flex justify-between items-center mb-12">
+            <button className="text-gray-400 hover:text-gray-600 transition flex items-center gap-2">
+              <span>←</span> Voltar
             </button>
+            <div className="flex items-center gap-2">
+              <span className="text-orange-600">🍳</span>
+              <span className="font-serif font-bold text-gray-800">CookUp</span>
+            </div>
           </div>
+
+          {/* Avatar dinâmico */}
+          <div className="flex flex-col items-center mb-10">
+            <div className="h-24 w-24 rounded-full bg-orange-50 border-2 border-orange-100 flex items-center justify-center text-orange-500 text-3xl font-serif mb-4 shadow-sm">
+              {profile?.name?.charAt(0) || "U"}
+            </div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-2xl font-serif text-gray-800">{profile?.name}</h2>
+              <span className="text-[10px] uppercase tracking-widest bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-bold">
+                Usuário
+              </span>
+            </div>
+            <p className="text-gray-400">@{profile?.username}</p>
+          </div>
+
+          {/* Lista de Informações */}
+          <div className="space-y-6">
+            <InfoItem label="Username" value={`@${profile?.username}`} icon="at" />
+            <InfoItem label="Apelido" value={profile?.name} icon="user" />
+            <InfoItem label="Bio" value={profile?.bio || "Sem biografia definida."} icon="text" />
+            <InfoItem label="Membro desde" value={profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString('pt-BR') : "---"} icon="calendar" />
+          </div>
+
+          <button className="mt-12 w-full rounded-xl bg-[#EE6338] py-4 text-white font-semibold shadow-lg shadow-orange-200 hover:bg-[#d55630] transition-all transform active:scale-[0.98]">
+            Editar Perfil
+          </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function InfoItem({ label, value, icon }: { label: string; value?: string; icon: string }) {
+  return (
+    <div className="group">
+      <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1 flex items-center gap-2">
+        <span className="opacity-50">#</span> {label}
+      </p>
+      <p className="text-gray-700 font-medium group-hover:text-orange-600 transition-colors">
+        {value}
+      </p>
     </div>
   );
 }
