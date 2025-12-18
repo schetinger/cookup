@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { api } from "@/trpc/react"; // Ajuste o import conforme seu projeto
+import { api } from "~/trpc/react"; // Ajuste o import conforme seu projeto
 
 export default function PerfilPage() {
   // 1. ARRUMANDO O ERRO: Use apenas o nome do procedimento. 

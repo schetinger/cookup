@@ -21,7 +21,7 @@ enum Status {
 
 model Account {
   id                 Int      @id @default(autoincrement())
-  userId             Int
+  userId             String
   type               String
   provider           String
   providerAccountId  String
@@ -39,18 +39,19 @@ model Account {
 model Session {
   id           Int      @id @default(autoincrement())
   sessionToken String   @unique
-  userId       Int
+  userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model User {
-  id        Int      @id @default(autoincrement())
+model User{
+  id        String      @id @default(cuid())
+  name      String?
   email     String  @unique
   emailVerified DateTime?
   image     String?
-  username  String  @unique // Campo customizado
-  nickname  String  // Campo customizado
+  username  String?  @unique // Campo customizado
+  nickname  String?  // Campo customizado
   role      Role     @default(USER) // Campo customizado
   bio       String?  // Campo customizado
   createdAt DateTime @default(now()) // Campo customizado
@@ -79,7 +80,7 @@ model PostReceita {
   status      String?
   createdAt   DateTime @default(now())
   user        User     @relation(fields: [userId], references: [id])
-  userId      Int
+  userId      String
   reviews     Review[]
   savedBy     User[]   @relation("SavedRecipes")
   imageUrl    String?
@@ -94,7 +95,7 @@ model Review {
   status     String?
   createdAt  DateTime @default(now())
   user       User     @relation(fields: [userId], references: [id])
-  userId     Int
+  userId     String
   receita    PostReceita @relation(fields: [id_receita], references: [id])
   id_receita Int
   @@unique([userId, id_receita])
@@ -104,9 +105,9 @@ model Review {
 
 model Follow {
   created_at       DateTime @default(now())
-  following_user_id Int
+  following_user_id String
   following         User @relation("following", fields: [following_user_id], references: [id])
-  followed_user_id  Int
+  followed_user_id  String
   followedBy        User @relation("followedBy", fields: [followed_user_id], references: [id])
   @@id([following_user_id, followed_user_id])
 }
